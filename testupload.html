@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html ng-app="uploadApp">
+<head>
+    <title>Upload Image</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <script>
+        var app = angular.module('uploadApp', []);
+
+        app.directive('fileModel', ['$parse', function ($parse) {
+            return {
+                restrict: 'A',
+                link: function(scope, element, attrs) {
+                    var model = $parse(attrs.fileModel);
+                    var modelSetter = model.assign;
+
+                    element.bind('change', function() {
+                        scope.$apply(function() {
+                            modelSetter(scope, element[0].files[0]);
+                            // Gọi hàm uploadFile khi có sự thay đổi trong việc chọn file
+                            scope.uploadFile();
+                        });
+                    });
+                }
+            };
+        }]);
+
+        app.service('fileUpload', ['$http', function ($http) {
+            this.uploadFileToUrl = function(file, uploadUrl) {
+                var fd = new FormData();
+                fd.append('file', file);
+
+                return $http.post(uploadUrl, fd, {
+                    transformRequest: angular.identity,
+                    headers: { 'Content-Type': undefined }
+                });
+            };
+        }]);
+
+        app.controller('UploadController', ['$scope', 'fileUpload', function($scope, fileUpload) {
+            $scope.uploadFile = function() {
+                var file = $scope.myFile;
+                console.log('file is ', file);
+
+                var uploadUrl = "http://localhost:8080/api/file/upload";
+                fileUpload.uploadFileToUrl(file, uploadUrl)
+                    .then(function(response) {
+                        console.log('Upload response: ', response);
+                        if (response.data) {
+                            $scope.uploadResponse = response.data;
+                        } else {
+                            $scope.uploadResponse = "No response received from server.";
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error uploading file: ', error);
+                        $scope.uploadResponse = "Error uploading file.";
+                    });
+            };
+        }]);
+    </script>
+</head>
+<body ng-controller="UploadController">
+    <h1>Upload Image</h1>
+    <img ng-src="{{uploadResponse.data.link}}" alt="">
+    <form>
+        <!-- Thêm directive file-model vào input file -->
+        <input type="file" file-model="myFile" />
+    </form>
+    <div ng-if="uploadResponse">
+        <h2>Upload Response</h2>
+        <p>{{ uploadResponse }}</p>
+        <a ng-href="{{ uploadResponse.data.link }}" target="_blank">View Uploaded Image</a>
+    </div>
+</body>
+</html>

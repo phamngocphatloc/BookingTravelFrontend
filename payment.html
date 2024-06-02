@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Page</title>
+</head>
+<body>
+    <h1>Payment Page</h1>
+
+    <script>
+        // Trích xuất tất cả các tham số từ URL
+        var queryParams = new URLSearchParams(window.location.search);
+        var vnp_Amount = queryParams.get('vnp_Amount');
+        var vnp_BankCode = queryParams.get('vnp_BankCode');
+        var vnp_CardType = queryParams.get('vnp_CardType');
+        var vnp_OrderInfo = queryParams.get('vnp_OrderInfo');
+        var vnp_PayDate = queryParams.get('vnp_PayDate');
+        var vnp_ResponseCode = queryParams.get('vnp_ResponseCode');
+        var vnp_TmnCode = queryParams.get('vnp_TmnCode');
+        var vnp_TransactionNo = queryParams.get('vnp_TransactionNo');
+        var vnp_TransactionStatus = queryParams.get('vnp_TransactionStatus');
+        var vnp_TxnRef = queryParams.get('vnp_TxnRef');
+        var vnp_SecureHash = queryParams.get('vnp_SecureHash');
+        
+        // Tạo URL mới với tiền tố #!/paying và tất cả các tham số
+        var returnUrl = "#!/paying/" + vnp_TxnRef + "?vnp_Amount=" + vnp_Amount + "&vnp_BankCode=" + vnp_BankCode + "&vnp_CardType=" + vnp_CardType + "&vnp_OrderInfo=" + vnp_OrderInfo + "&vnp_PayDate=" + vnp_PayDate + "&vnp_ResponseCode=" + vnp_ResponseCode + "&vnp_TmnCode=" + vnp_TmnCode + "&vnp_TransactionNo=" + vnp_TransactionNo + "&vnp_TransactionStatus=" + vnp_TransactionStatus + "&vnp_TxnRef=" + vnp_TxnRef + "&vnp_SecureHash=" + vnp_SecureHash;
+
+        // Chuyển hướng người dùng đến URL mới
+        window.location.href = returnUrl;
+    </script>
+</body>
+</html>
+    

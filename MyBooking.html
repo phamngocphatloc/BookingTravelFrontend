@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shCzFjL8E4oPTZs0txMlfh5u8xNJzF4NTVRnW" crossorigin="anonymous">
+</head>
+<body>
+<style>
+    
+</style>
+<div class="container mt-5">
+    <h2 class="mb-4">My Bookings</h2>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Họ Tên</th>
+                <th scope="col">Số Điện Thoại</th>
+                <th scope="col">Giá</th>
+                <th scope="col">Trạng Thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="booking in bookings" ng-click="bookingdetails(booking.id)">
+                <td>{{booking.id}}</td>
+                <td>{{booking.firstName}} {{booking.lastName}}</td>
+                <td>{{booking.phone}}</td>
+                <td>{{booking.price | currencyVND}} VNĐ</td>
+                <td>{{booking.booking.status}}</td>
+            </tr>
+        </tbody>
+        
+    </table>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" ng-click="previousPage()">Previous</a></li>
+          <li ng-repeat="page in pages track by $index" class="page-item"><a class="page-link" href="#!/mybooking/{{page}}">{{page}}</a></li>
+          <li class="page-item"><a class="page-link" ng-click="nextPage()" href>Next</a></li>
+        </ul>
+      </nav>>
+    </ul>
+</div>
+
+<!-- Bootstrap JS (Optional, if needed) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-S81eQvvRl1jZ3uU4zGgk8F5nFpTqfauyJ5eEvJa02UmbIW8tccLcgYHVgXNod2Kp" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <title>AngularJS Form with Noty</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+    <script src="app.js"></script>
+</head>
+<body ng-controller="FormController">
+
+    <form name="form" ng-submit="submitForm()" novalidate>
+        <label for="name">Name:</label>
+        <input type="text" id="name" ng-model="formData.name" required>
+        <br>
+        <label for="email">Email:</label>
+        <input type="email" id="email" ng-model="formData.email" required>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+
+</body>
+</html>
+<script>
+    // Tạo module AngularJS
+var app = angular.module('myApp', []);
+
+// Tạo controller
+app.controller('FormController', ['$scope', function($scope) {
+    $scope.formData = {};
+
+    $scope.submitForm = function() {
+        // Kiểm tra form có hợp lệ không
+        if ($scope.form.$valid) {
+            // Hiển thị Noty khi form hợp lệ và được submit
+            new Noty({
+                text: 'Your form has been submitted successfully.',
+                type: 'success',
+                layout: 'topRight',
+                timeout: 3000
+            }).show();
+        } else {
+            // Hiển thị Noty khi form không hợp lệ
+            new Noty({
+                text: 'Please fill out the form correctly.',
+                type: 'error',
+                layout: 'topRight',
+                timeout: 3000
+            }).show();
+        }
+    };
+}]);
+
+</script>

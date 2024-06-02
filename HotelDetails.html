@@ -1,0 +1,280 @@
+<style>
+    .icon-hover:hover {
+  border-color: #3b71ca !important;
+  background-color: white !important;
+  color: #3b71ca !important;
+}
+
+.icon-hover:hover i {
+  color: #3b71ca !important;
+}
+</style>
+<section class="relative about-banner" id="home">	
+    <div class="overlay overlay-bg"></div>
+    <div class="container">				
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="about-content col-lg-12">
+                <h1 class="text-white">
+                    Elements		
+                </h1>	
+                <p class="text-white link-nav"><a href="index.html">Home </a>  <span class="lnr lnr-arrow-right"></span>  <a href=""> Elements</a></p>
+            </div>	
+        </div>
+    </div>
+</section>
+
+  <!-- content -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row gx-5">
+        <aside class="col-lg-6">
+          <div class="border rounded-4 mb-3 d-flex justify-content-center">
+            <a data-fslightbox="mygalley" class="rounded-4" target="_blank" data-type="image" href="{{hotel.images[0].link}}">
+              <img style="max-width: 100%; max-height: 100vh; margin: auto;" class="rounded-4 fit" src="{{hotel.images[0].link}}" />
+            </a>
+          </div>
+          <div class="d-flex justify-content-center mb-3" ng-repeat='image in hotel.images'>
+            <a data-fslightbox="mygalley" class="border mx-1 rounded-2" target="_blank" data-type="image" href="{{image.link}}" class="item-thumb">
+              <img width="60" height="60" class="rounded-2" src="{{image.link}}" />
+            </a>
+            </a>
+          </div>
+          <!-- thumbs-wrap.// -->
+          <!-- gallery-wrap .end// -->
+        </aside>
+        <main class="col-lg-6">
+          <div class="ps-lg-3">
+            <h4 class="title text-dark">
+              Nhóm 8 Hotel 
+            </h4> 
+            <div class="d-flex flex-row my-3">
+              <div class="text-warning mb-1 me-2">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+                <span class="ms-1">
+                  4.5
+                </span>
+              </div>
+              <span class="text-success ms-2"> <span ng-show="hotel.status=='still'" style="color: green;"> Còn Phòng </span> <span ng-show="hotel.status=='full'" style="color: red;"> Hết Phòng </span> </span>
+            </div>
+  
+            <div class="mb-3">
+              <span class="h5">Chỉ Từ {{hotel.price | currencyVND}} VNĐ</span>
+              <span class="text-muted">/1 Đêm</span>
+            </div>
+
+            <p>
+             {{hotel.address}} | <span style="font-size: 18px; color: green;">Cách Bạn: {{hotel.distance}} KM</span>
+            </p>
+            <p>
+                Số Lường Phòng: {{hotel.listRooms.length}}
+            </p>
+            
+            
+            <hr />
+  
+            <div class="row mb-4">
+              <div class="col-md-4 col-6">
+                <label class="mb-2">Chọn Phòng</label>
+                <select class="form-select border border-secondary" style="height: 35px;" ng-model="roomchoose" ng-change="chooseRoom()">
+                    <option value="" disabled selected>Chọn</option>
+                    <option value="{{room}}" ng-repeat="room in hotel.listRooms" ng-disabled="room.status === 'Reserved'">
+                      {{room.roomName}} - Giá: {{room.price | currencyVND}} VNĐ
+                  </option>
+                  
+                </select>
+              </div>
+              <!-- col.// -->
+              <div class="col-md-4 col-6 mb-3">
+                <label class="mb-2 d-block">Số Ngày</label>
+                <div class="input-group mb-3" style="width: 170px;">
+
+                  <input type="text" class="form-control text-center border border-secondary" value="{{day}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+
+                </div>
+              </div>
+              
+            </div>
+            <hr />
+            <div class="row mb-4">
+                <div class="col-md-4 col-6 mb-3">
+                    <label class="mb-2 d-block">Ngày Nhận</label>
+                    <div class="input-group mb-3" style="width: 170px;">
+    
+                      <input type="text" class="form-control text-center border border-secondary" value="{{checkIn}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+    
+                    </div>
+                  </div>
+                <!-- col.// -->
+                <div class="col-md-4 col-6 mb-3">
+                  <label class="mb-2 d-block">Ngày Trả</label>
+                  <div class="input-group mb-3" style="width: 170px;">
+  
+                    <input type="text" class="form-control text-center border border-secondary" value="{{checkOut}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+  
+                  </div>
+                </div>
+                
+                <!-- col.// -->
+                <div class="col-md-4 col-6 mb-3">
+                    <label class="mb-2 d-block">Tổng Tiền: </label>
+                    <div class="input-group mb-3" style="width: 170px;">
+    
+                      <input type="text" class="form-control text-center border border-secondary" value="{{price | currencyVND}} VNĐ" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+    
+                    </div>
+                  </div>
+              </div>
+
+
+                
+
+           <!-- Button trigger modal -->
+          <a  class="btn btn-primary shadow-0" data-toggle="modal" data-target="#bookingModal">
+              <i class="me-1 fa fa-shopping-basket"></i> Booking
+          </a>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+  <!-- content -->
+  <section class="price-area section-gap">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="menu-content pb-70 col-lg-8">
+                <div class="title text-center">
+                    <h1 class="mb-10">Các Dịch Vụ Của Chúng Tôi</h1>
+                    <p>Các Dịch Vụ Mà Khách Sạn Của Chúng Tôi Cung Cấp</p>
+                </div>
+            </div>
+        </div>						
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="single-price">
+                    <h4>Service Free</h4>
+                    <ul class="price-list">
+                        <li ng-repeat = 'service in servicesFree' class="d-flex justify-content-between align-items-center">
+                            <span>{{service.serviceName}}</span>
+                            <a class="price-btn">{{service.servicePrice}} VNĐ</a>
+                        </li>													
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="single-price">
+                    <h4>Service Luxury</h4>
+                    <ul class="price-list">
+                        <li ng-repeat = 'service in servicesLuxury' class="d-flex justify-content-between align-items-center">
+                            <span>{{service.serviceName}}</span>
+                            <a class="price-btn">Từ: {{ service.servicePrice | currencyVND }} VNĐ</a>
+                        </li>													
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="single-price">
+                    <h4>Service VIP</h4>
+                    <ul class="price-list">
+                        <li ng-repeat = 'service in servicesVip' class="d-flex justify-content-between align-items-center">
+                            <span>{{service.serviceName}}</span>
+                            <a class="price-btn">Từ: {{ service.servicePrice | currencyVND }} VNĐ</a>
+                        </li>													
+                    </ul>														
+                    </ul>
+                </div>
+            </div>												
+        </div>
+    </div>	
+</section>
+<!-- Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bookingModalLabel">Kiểm Tra Bill</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Your booking form goes here -->
+        <!-- For example: -->
+        <form>
+          <div class="row mb-4">
+          <div class="col-md-12"><label  class="labels">Họ</label><input ng-model="bill.firstName" type="text" class="form-control" placeholder="enter fullName" value="" required></div>
+          <div class="col-md-12"><label  class="labels">Tên</label><input ng-model="bill.lastName" type="text" class="form-control" placeholder="enter phone number" value=""></div>
+          <div class="col-md-12"><label  class="labels">Số Điện Thoại</label><input ng-model="bill.phone" type="text" class="form-control" placeholder="enter phone number" value=""></div>
+          </div>
+          <hr />
+          <div class="row mb-4">
+            <div class="col-md-4 col-12">
+                  <label class="mb-2 d-block">Phòng</label>
+                  <div class="input-group mb-3" style="width: 170px;">
+  
+                    <input style="display: none;" ng-model="bill.booking.roomBookingId" type="text" class="form-control text-center border border-secondary" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+                    <input  value="{{roomName}}" type="text" class="form-control text-center border border-secondary" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+                  </div>
+            </div>
+            <!-- col.// -->
+            <div class="col-md-4 col-6 mb-3">
+              <label class="mb-2 d-block">Số Ngày</label>
+              <div class="input-group mb-3" style="width: 170px;">
+
+                <input type="text" class="form-control text-center border border-secondary" value="{{day}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+
+              </div>
+            </div>
+            
+          </div>
+          <hr />
+          <div class="row mb-4">
+              <div class="col-md-4 col-6 mb-3">
+                  <label class="mb-2 d-block">Ngày Nhận</label>
+                  <div class="input-group mb-3" style="width: 170px;">
+  
+                    <input ng-model="bill.booking.checkIn" type="text" class="form-control text-center border border-secondary" value="{{checkIn}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+  
+                  </div>
+                </div>
+              <!-- col.// -->
+              <div class="col-md-4 col-6 mb-3">
+                <label class="mb-2 d-block">Ngày Trả</label>
+                <div class="input-group mb-3" style="width: 170px;">
+
+                  <input ng-model="bill.booking.checkOut" type="text" class="form-control text-center border border-secondary" value="{{checkOut}}" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+
+                </div>
+              </div>
+              
+              <!-- col.// -->
+              
+            </div>
+
+            <div class="row mb-4">
+              <!-- col.// -->
+              <div class="col-md-4 col-6 mb-3">
+                <label class="mb-2 d-block">Tổng Tiền</label>
+                <div class="input-group mb-3" style="width: 170px;">
+
+                  <input style="display: none;" type="text" class="form-control text-center border border-secondary" ng-model="bill.price" vnd aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+                  <input type="text" class="form-control text-center border border-secondary" value="{{bill.price | currencyVND}} VNĐ" aria-label="Example text with button addon" aria-describedby="button-addon1" disabled/>
+
+                </div>
+              </div>
+              
+              <!-- col.// -->
+              
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button ng-click="book()" type="button" data-dismiss="modal" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>

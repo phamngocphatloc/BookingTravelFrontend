@@ -1,0 +1,109 @@
+<style>
+    body {
+        background-image: url(img/hero-bg.jpg)
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #BA68C8
+}
+
+.profile-button {
+    background: rgb(99, 39, 120);
+    box-shadow: none;
+    border: none
+}
+
+.profile-button:hover {
+    background: #682773
+}
+
+.profile-button:focus {
+    background: #682773;
+    box-shadow: none
+}
+
+.profile-button:active {
+    background: #682773;
+    box-shadow: none
+}
+
+.back:hover {
+    color: #682773;
+    cursor: pointer
+}
+
+.labels {
+    font-size: 11px
+}
+
+.add-experience:hover {
+    background: #BA68C8;
+    color: #fff;
+    cursor: pointer;
+    border: solid 1px #BA68C8
+}
+</style>
+<div class="container rounded bg-white mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-3 border-right">
+            <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+                <img id="avatar" class="rounded-circle mt-5" width="150px" src="{{user.avatar}}" click-upload>
+                <span class="font-weight-bold">{{user.fullname}}</span>
+                <span class="text-black-50">{{user.email}}</span>
+                <span> </span>
+            </div>
+            
+        </div>
+        <div class="col-md-5 border-right">
+            <div class="p-3 py-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="text-right">Profile Settings</h4>
+                </div>
+                <form ng-submit="changeProfile()">
+                <div class="row mt-3">
+                    <div class="col-md-12"><label class="labels">FullName</label><input ng-model="user.fullname" type="text" class="form-control" placeholder="enter fullName" value="" required></div>
+                    <div class="col-md-12"><label class="labels">Số Điện Thoại</label><input ng-model="user.phone" type="text" class="form-control" placeholder="enter phone number" value=""></div>
+                    <div class="col-md-12"> ><label class="labels">Địa Chỉ</label>
+						<input ng-model="user.address" type="text" class="form-control" placeholder="Địa Chỉ" ng-keyup="getAddressSuggestions()" autocomplete="off" required>
+						<!-- Phần tử hiển thị gợi ý địa chỉ -->
+						<div class="suggestions" ng-show="showAddressSuggestions">
+						  <div class="suggestion-item" ng-repeat="suggestion in addressSuggestions" ng-click="selectAddressSuggestion(suggestion)">
+							{{ suggestion.place_name }}
+						  </div>
+						</div>
+					  </div>
+                    <div class="col-md-12"><label class="labels">Email</label><input disabled ng-model="user.email" type="text" class="form-control" placeholder="enter email id" value=""></div>
+                </div>
+                <input id="fileInput" type="file" file-model="myFile" style="display: none;"/>
+                <div class="row mt-3">
+                    <div class="col-md-4"><label class="labels">Tỉnh/Thành Phố</label>
+                          <select class="form-control" style="color: black;" ng-model="selectedProvince" ng-options="province.full_name for province in provinces track by province.id" ng-change="fetchDistricts(selectedProvince.id)" class="form-control" required>
+                              <option value="user.city" disabled selected>{{user.city}}</option>
+                          </select>
+                    </div>
+         
+                    <div class="col-md-4"><label class="labels">Phường/Xã</label>
+                          <select class="form-control" ng-model="selectedDistrict" ng-options="district.name for district in districts track by district.id" ng-change="fetchWards(selectedDistrict.id)" class="form-control" required>
+                              <option value="{{user.district}}" disabled selected>{{user.district}}</option>
+                          </select>
+                    </div>
+                    <div class="col-md-4"><label class="labels">Quận Huyện</label>
+                
+                          <select class="form-control" ng-model="selectedWard" ng-options="ward.name for ward in wards track by ward.id" class="form-control" required>
+                              <option value="{{user.district}}" disabled selected>{{user.ward}}</option>
+                          </select>
+                    </div>
+                
+
+                </div>
+                <p style="color: green; text-align: center; font-size: 15px;">{{success}}</p>
+                <p style="color: red; text-align: center; font-size: 15px;">{{error}}</p>
+                <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Save Profile</button></div>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
