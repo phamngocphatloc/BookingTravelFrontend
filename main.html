@@ -25,6 +25,7 @@
                             <form class="form-wrap" ng-submit="searchHotels()">
                                 <select id="to" class="form-control" name="to" ng-model="searchQuery.to" required>
                                     <option value="" disabled selected>Select Destination</option>
+                                    <option value="near">Khách Sạn Gần Bạn</option>
                                     <option ng-repeat="tour in tours" value="{{tour.name}}">{{tour.name}}</option>
                                 </select>
                                 <input type="date" class="form-control date-picker" name="start" ng-model="searchQuery.start" placeholder="Start " onfocus="this.placeholder = ''" onblur="this.placeholder = 'Start '" required>

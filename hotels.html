@@ -63,7 +63,13 @@
 							</div>
 						</a>
 						</div>	
+						
 				</div>	
+				<nav aria-label="Page navigation example">
+					<ul class="pagination">
+					  <li ng-repeat="page in pages track by $index" class="page-item"><a class="page-link" ng-click="changepage(page-1)">{{page}}</a></li>
+					</ul>
+				  </nav>
 			</section>
 			<!-- End destinations Area -->
 			

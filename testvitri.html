@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AngularJS Mapbox Example</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body ng-app="mapApp" ng-controller="MapController">
+    <div id="map"></div>
+    <script src="app.js"></script>
+</body>
+</html>
+<script>
+    angular.module('mapApp', [])
+  .controller('MapController', ['$scope', function($scope) {
+    // Thay thế 'YOUR_MAPBOX_ACCESS_TOKEN' bằng API Key của bạn
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZmNwaGF0bG9jIiwiYSI6ImNsd3BhbmZ6NzE0ZzgybXJ6OWkydWQ5YnYifQ.y68hz5wbABat0CPaoRsr7gYOUR_MAPBOX_ACCESS_TOKEN';
+
+    // Tạo bản đồ
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [0, 0], // Tọa độ ban đầu (có thể thay đổi)
+      zoom: 2 // Mức độ phóng to ban đầu (có thể thay đổi)
+    });
+
+    // Kiểm tra nếu trình duyệt hỗ trợ Geolocation API
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const { latitude, longitude } = position.coords;
+        // Cập nhật vị trí của bản đồ
+        map.setCenter([longitude, latitude]);
+        map.setZoom(14);
+
+        // Thêm marker tại vị trí hiện tại
+        new mapboxgl.Marker()
+          .setLngLat([longitude, latitude])
+          .addTo(map);
+      }, error => {
+        console.error('Error getting geolocation: ', error);
+      });
+    } else {
+      console.error('Geolocation API is not supported in this browser.');
+    }
+  }]);
+
+</script>

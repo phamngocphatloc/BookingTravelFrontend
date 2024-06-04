@@ -26,18 +26,11 @@
 <body ng-controller="DistanceController">
   <h1>Tính khoảng cách giữa hai địa điểm</h1>
   <form ng-submit="calculateDistance()">
-    <label for="origin">Địa chỉ bắt đầu:</label>
-    <input type="text" id="origin" ng-model="origin" ng-keyup="getSuggestions('origin')" autocomplete="off" />
-    <!-- Phần tử hiển thị gợi ý địa chỉ bắt đầu -->
-    <div class="suggestions" ng-show="showOriginSuggestions">
-      
-    </div>
-    <br />
     <label for="destination">Địa chỉ đích:</label>
-    <input type="text" id="destination" ng-model="destination" ng-keyup="getSuggestions('destination')" autocomplete="off" />
+    <input type="text" id="destination" ng-model="destination" ng-keyup="getSuggestions()" autocomplete="off" />
     <!-- Phần tử hiển thị gợi ý địa chỉ đích -->
     <div class="suggestions" ng-show="showDestinationSuggestions">
-      <div class="suggestion-item" ng-repeat="suggestion in destinationSuggestions" ng-click="selectSuggestion('destination', suggestion)">
+      <div class="suggestion-item" ng-repeat="suggestion in destinationSuggestions" ng-click="selectSuggestion(suggestion)">
         {{ suggestion.place_name }}
       </div>
     </div>
@@ -50,14 +43,11 @@
 </body>
 </html>
 <script>
-    angular.module('distanceApp', [])
+angular.module('distanceApp', [])
   .controller('DistanceController', ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
-    $scope.origin = '';  // Địa chỉ bắt đầu
     $scope.destination = '';  // Địa chỉ đích
-    $scope.distance = '';  // Khoảng cách giữa hai địa chỉ
-    $scope.originSuggestions = [];  // Gợi ý địa chỉ bắt đầu
+    $scope.distance = '';  // Khoảng cách giữa vị trí hiện tại và địa chỉ đích
     $scope.destinationSuggestions = [];  // Gợi ý địa chỉ đích
-    $scope.showOriginSuggestions = false;  // Hiển thị gợi ý địa chỉ bắt đầu
     $scope.showDestinationSuggestions = false;  // Hiển thị gợi ý địa chỉ đích
 
     const mapboxToken = 'pk.eyJ1IjoiZmNwaGF0bG9jIiwiYSI6ImNsd3BhbmZ6NzE0ZzgybXJ6OWkydWQ5YnYifQ.y68hz5wbABat0CPaoRsr7g';  // Token API Mapbox
@@ -65,8 +55,11 @@
     // Hàm để lấy tọa độ từ địa chỉ
     function geocode(address) {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxToken}`;
+      console.log(`Geocoding URL: ${url}`);
       return $http.get(url).then(response => {
+        console.log('Geocode response:', response.data);
         if (response.data.features.length > 0) {
+          console.log('First feature:', response.data.features[0]);
           return response.data.features[0].geometry.coordinates;
         } else {
           throw new Error('Không tìm thấy địa chỉ');
@@ -77,7 +70,9 @@
     // Hàm để lấy lộ trình và tính khoảng cách giữa hai tọa độ
     function getDirections(coords1, coords2) {
       const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coords1[0]},${coords1[1]};${coords2[0]},${coords2[1]}?geometries=geojson&access_token=${mapboxToken}`;
+      console.log(`Directions URL: ${url}`);
       return $http.get(url).then(response => {
+        console.log('Directions response:', response.data);
         if (response.data.routes.length > 0) {
           return response.data.routes[0].distance / 1000; // Chuyển đổi từ mét sang km
         } else {
@@ -86,77 +81,81 @@
       });
     }
 
-    // Hàm để tính khoảng cách giữa hai địa chỉ
+    // Lấy vị trí hiện tại khi trang được tải
+    function getCurrentPosition() {
+      if (!navigator.geolocation) {
+        alert('Trình duyệt của bạn không hỗ trợ Geolocation.');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(position => {
+        $scope.currentPosition = [position.coords.longitude, position.coords.latitude];
+        console.log('Current position:', $scope.currentPosition);
+      }, error => {
+        console.error('Geolocation error:', error);
+        alert('Có lỗi xảy ra khi lấy vị trí hiện tại của bạn.');
+      });
+    }
+
+    // Hàm để tính khoảng cách giữa vị trí hiện tại và địa chỉ đích
     $scope.calculateDistance = function() {
-      Promise.all([geocode($scope.origin), geocode($scope.destination)])
-        .then(results => {
-          const coords1 = results[0];
-          const coords2 = results[1];
-          return getDirections(coords1, coords2);
+      if (!$scope.currentPosition) {
+        alert('Không thể lấy vị trí hiện tại của bạn.');
+        return;
+      }
+
+      geocode($scope.destination)
+        .then(coords2 => {
+          console.log('Destination coordinates:', coords2);
+          return getDirections($scope.currentPosition, coords2);
         })
         .then(distance => {
-          $scope.$apply(() => {
+          $timeout(() => {
             $scope.distance = distance.toFixed(2);  // Hiển thị khoảng cách với 2 chữ số thập phân
           });
         })
         .catch(error => {
-          console.error(error);
+          console.error('Error calculating distance:', error);
           alert('Có lỗi xảy ra khi tính khoảng cách. Vui lòng kiểm tra lại địa chỉ.');
         });
     };
 
     // Hàm để lấy gợi ý địa chỉ khi người dùng nhập liệu
-    $scope.getSuggestions = function(type) {
-      const input = type === 'origin' ? $scope.origin : $scope.destination;
+    $scope.getSuggestions = function() {
+      const input = $scope.destination;
       if (!input) {
-        if (type === 'origin') {
-          $scope.originSuggestions = [];
-          $scope.showOriginSuggestions = false;
-        } else {
-          $scope.destinationSuggestions = [];
-          $scope.showDestinationSuggestions = false;
-        }
+        $scope.destinationSuggestions = [];
+        $scope.showDestinationSuggestions = false;
         return;
       }
 
       // Thêm thông tin giới hạn tìm kiếm trong khu vực Việt Nam
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(input)}.json?access_token=${mapboxToken}&autocomplete=true&limit=5&bbox=102.14441,8.17966,109.464638,23.393395&language=vi&country=VN`;
+      console.log(`Suggestions URL: ${url}`);
       $http.get(url).then(response => {
-        if (type === 'origin') {
-          $scope.originSuggestions = response.data.features;
-          $scope.showOriginSuggestions = true;
-        } else {
-          $scope.destinationSuggestions = response.data.features;
-          $scope.showDestinationSuggestions = true;
-        }
+        console.log('Suggestions response:', response.data);
+        $scope.destinationSuggestions = response.data.features;
+        $scope.showDestinationSuggestions = true;
       }).catch(error => {
         console.error('Error fetching suggestions:', error);
       });
     };
 
     // Hàm để chọn gợi ý địa chỉ
-    $scope.selectSuggestion = function(type, suggestion) {
-      if (type === 'origin') {
-        $scope.origin = suggestion.place_name;
-        $scope.originSuggestions = [];
-        $scope.showOriginSuggestions = false;
-      } else {
-        $scope.destination = suggestion.place_name;
-        $scope.destinationSuggestions = [];
-        $scope.showDestinationSuggestions = false;
-      }
+    $scope.selectSuggestion = function(suggestion) {
+      $scope.destination = suggestion.place_name;
+      $scope.destinationSuggestions = [];
+      $scope.showDestinationSuggestions = false;
     };
 
     // Hàm để ẩn gợi ý địa chỉ
-    $scope.hideSuggestions = function(type) {
+    $scope.hideSuggestions = function() {
       $timeout(() => {
-        if (type === 'origin') {
-          $scope.showOriginSuggestions = false;
-        } else {
-          $scope.showDestinationSuggestions = false;
-        }
+        $scope.showDestinationSuggestions = false;
       }, 200); // Delay để cho phép sự kiện click xảy ra
     };
-  }]);
 
+    // Gọi hàm lấy vị trí hiện tại khi controller được khởi tạo
+    getCurrentPosition();
+  }]);
 </script>
