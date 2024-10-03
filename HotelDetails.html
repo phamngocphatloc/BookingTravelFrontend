@@ -22,7 +22,7 @@
         </div>
     </div>
 </section>
-
+<title>Khách Sạn - BookingTravel</title>
   <!-- content -->
   <section class="py-5">
     <div class="container">
@@ -45,7 +45,7 @@
         <main class="col-lg-6">
           <div class="ps-lg-3">
             <h4 class="title text-dark">
-              Nhóm 8 Hotel 
+              {{hotel.partner.hotelName}} 
             </h4> 
             <div class="d-flex flex-row my-3">
               <div class="text-warning mb-1 me-2">
@@ -82,7 +82,7 @@
                 <select class="form-select border border-secondary" style="height: 35px;" ng-model="roomchoose" ng-change="chooseRoom()">
                     <option value="" disabled selected>Chọn</option>
                     <option value="{{room}}" ng-repeat="room in hotel.listRooms" ng-disabled="room.status === 'Reserved'">
-                      {{room.roomName}} - Giá: {{room.price | currencyVND}} VNĐ
+                      {{room.roomName}} - Giá: {{room.price | currencyVND}} VNĐ - {{room.bed[0].bedName}}
                   </option>
                   
                 </select>
@@ -274,6 +274,10 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         <button ng-click="book()" type="button" data-dismiss="modal" class="btn btn-primary">Submit</button>
+      </div>
+      <div class="modal-footer" ng-show='userBook.role == "ROLE_ADMIN"'>
+        <div>Admin:</div><br>
+        <button ng-click="bookVistor()" type="button" data-dismiss="modal" class="btn btn-primary">Đặt Cho Khách Vãng Lai Đã Thanh Toán</button>
       </div>
     </div>
   </div>

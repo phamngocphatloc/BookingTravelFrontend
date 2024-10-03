@@ -6,6 +6,12 @@ app.config(function ($routeProvider) {
       templateUrl: "main.html",
       controller: "main"
     })
+    .when("/test", {
+      templateUrl: "/newtemplate/index.html",
+      controller: "main"
+    }).when("/about", {
+      templateUrl: "about.html"
+    })
     .when("/hotels", {
       templateUrl: "hotels.html",
       controller: 'hotelsController'
@@ -56,14 +62,14 @@ app.config(function ($routeProvider) {
     });
 });
 
-const urlApi = "http://103.69.87.92:8080";
+const urlApi = "https://bookingapi.click";
 
-app.controller('main', function ($scope, $http, $location, $filter) {
+app.controller('main', function ($scope, $http, $location, $filter,$timeout) {
 
   $http.get(urlApi + '/api/get_attraction').then(function (respone) {
     $scope.tours = respone.data.data;
 
-    console.log($scope.tours);
+    //console.log($scope.tours);
 
 
   });
@@ -82,7 +88,15 @@ app.controller('main', function ($scope, $http, $location, $filter) {
   $http.get(urlApi + '/api/get_top_tour_attraction').then(function (respone) {
     $scope.toursTop = respone.data.data;
 
-    console.log($scope.toursTop);
+    //console.log($scope.toursTop);
+
+
+  });
+
+  $http.get(urlApi + '/api/review/getAll').then(function (respone) {
+    $scope.reviews = respone.data.data;
+
+    //console.log($scope.reviews);
 
 
   });
@@ -94,14 +108,38 @@ app.controller('main', function ($scope, $http, $location, $filter) {
   today = new Date();
   $scope.dateNow = $filter('date')(today, 'yyyy/MM/dd')
   $scope.dateTomorrow = $filter('date')(today.setDate(today.getDate() + 1), 'yyyy/MM/dd')
-  console.log($scope.dateNow)
-  console.log($scope.dateTomorrow)
+  //console.log($scope.dateNow)
+  //console.log($scope.dateTomorrow)
   $scope.searchHotels = function () {
+    today = new Date();
+    dateNowFormat = $filter('date')(today, 'yyyy/MM/dd')
+    //console.log (dateNowFormat)
+    if ($scope.searchQuery.start >= $scope.searchQuery.return){
+      new Noty({
+        text: 'checkin không được lớn hơn checkout',
+        type: 'error',
+        layout: 'topRight',
+        timeout: 3000
+    }).show();
+    return;
+    }
+    today.setDate(today.getDate() - 1)
+    if ($scope.searchQuery.start <= today){
+      //console.log (today)
+      new Noty({
+        text: 'Ngày Checkin nhỏ hơn ngày hiện tại',
+        type: 'error',
+        layout: 'topRight',
+        timeout: 3000
+    }).show();
+    return;
+    }
 
     if ($scope.searchQuery.to == 'near'){
       $location.path('/nearhotels').search({
         start: $scope.formattedDate = $filter('date')($scope.searchQuery.start, 'yyyy/MM/dd'),
-        return: $scope.formattedDate = $filter('date')($scope.searchQuery.return, 'yyyy/MM/dd')
+        return: $scope.formattedDate = $filter('date')($scope.searchQuery.return, 'yyyy/MM/dd'),
+        hotelName: $scope.searchQuery.hotelName
       });
     }else{
 
@@ -110,23 +148,156 @@ app.controller('main', function ($scope, $http, $location, $filter) {
       search: $scope.searchQuery.to,
       start: $scope.formattedDate = $filter('date')($scope.searchQuery.start, 'yyyy/MM/dd'),
       return: $scope.formattedDate = $filter('date')($scope.searchQuery.return, 'yyyy/MM/dd'),
+      hotelName: $scope.searchQuery.hotelName,
       adults: $scope.searchQuery.adults,
       child: $scope.searchQuery.child
     });
   }
   };
 
+  $scope.feedback = {
+    rate: '1' // Đặt giá trị mặc định là '1'
+};
+
+$scope.toggleHotelNameInput = function() {
+  if ($scope.searchQuery.to !== 'near') {
+      $scope.showHotelNameInput = true;
+  } else {
+      $scope.showHotelNameInput = false;
+  }
+};
+var timeoutPromise;
+// Function to get hotel name suggestions based on user input with debounce
+$scope.getHotelSuggestions = function() {
+  if (timeoutPromise) {
+      $timeout.cancel(timeoutPromise);
+  }
+  timeoutPromise = $timeout(function() {
+      if ($scope.searchQuery.hotelName) {
+          var params = {
+              tour: $scope.searchQuery.to,
+              find: $scope.searchQuery.hotelName
+          };
+
+          $http.get('http://bookingapi.click/api/hotel/get_hotel_name', { params: params })
+              .then(function(response) {
+                  if (response.data.status === 200) {
+                      $scope.hotelSuggestions = response.data.data;
+                      $scope.showHotelNameSuggestions = true;
+                  } else {
+                      console.error('Error fetching hotel suggestions:', response.data.message);
+                      $scope.showHotelNameSuggestions = false;
+                  }
+              })
+              .catch(function(error) {
+                  console.error('Error fetching hotel suggestions:', error);
+                  $scope.showHotelNameSuggestions = false;
+              });
+      } else {
+          $scope.hotelSuggestions = [];
+          $scope.showHotelNameSuggestions = false;
+      }
+  }, 500); // Thời gian debounce là 500ms
+};
+
+// Function to handle input change and debounce
+$scope.handleInputChange = function() {
+  $scope.getHotelSuggestions();
+};
+
+
+$scope.selectHotel = function(hotel) {
+  $scope.searchQuery.hotelName = hotel.hotelName;
+  $scope.showHotelNameSuggestions = false;
+};
+
+
+  $scope.submitfeedback = function (){
+    if (localStorage.getItem('token')!=null){
+      //console.log($scope.feedback)
+      $http({
+        url: urlApi + '/api/review/comment',
+        method: "POST",
+        data: JSON.stringify($scope.feedback),
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token'), // Thay `yourAuthToken` bằng token của bạn
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(function (response) {
+        new Noty({
+            text: 'Feedback thành công.',
+            type: 'success',
+            layout: 'topRight',
+            timeout: 1000
+        }).show();
+    },
+    function (response) { // optional
+        // failed
+    
+        // Hiển thị Noty khi form không hợp lệ
+        new Noty({
+            text: response.data.message,
+            type: 'error',
+            layout: 'topRight',
+            timeout: 3000
+        }).show();
+        //console.log(response.data.message)
+    });
+    
+  }else{
+    new Noty({
+      text: 'Vui Lòng Đăng Nhập',
+      type: 'error',
+      layout: 'topRight',
+      timeout: 1000
+    }).show();
+  }
+}
+
 
 });
-app.controller('hotelsController', function ($scope, $http, $routeParams, $location) {
+app.controller('hotelsController', function ($scope, $http, $routeParams, $location,$filter) {
   // Lấy thông tin tìm kiếm từ URL
   var search = $routeParams.search;
+  $scope.search = search
   var checkIn = $routeParams.start;
   $scope.checkIn = checkIn;
   var checkOut = $routeParams.return;
   $scope.checkOut = checkOut;
   var page = 0;
+  var hotelName = '';
+  if ($routeParams.hotelName != undefined){
+  var hotelName = $routeParams.hotelName;
+  }
+  today = new Date();
+    dateNowFormat = $filter('date')(today, 'yyyy/MM/dd')
+    var dateString = checkIn; // Chuỗi ngày cần chuyển đổi
+    var parts = dateString.split('/'); // Tách chuỗi thành các phần tử: năm, tháng, ngày
+    var yearCheckIn = parseInt(parts[0]); // Chuyển đổi phần tử năm thành số nguyên
+    var monthCheckIn = parseInt(parts[1]) - 1; // Chuyển đổi phần tử tháng thành số nguyên và trừ đi 1 vì index của tháng bắt đầu từ 0
+    var dayCheckIn = parseInt(parts[2]); // Chuyển đổi phần tử ngày thành số nguyên
 
+    var dateCheckIn = new Date(yearCheckIn, monthCheckIn, dayCheckIn);
+    var dateString = checkOut; // Chuỗi ngày cần chuyển đổi
+    var parts = dateString.split('/'); // Tách chuỗi thành các phần tử: năm, tháng, ngày
+    var yearCheckOut = parseInt(parts[0]); // Chuyển đổi phần tử năm thành số nguyên
+    var monthCheckOut = parseInt(parts[1]) - 1; // Chuyển đổi phần tử tháng thành số nguyên và trừ đi 1 vì index của tháng bắt đầu từ 0
+    var dayCheckOut = parseInt(parts[2]); // Chuyển đổi phần tử ngày thành số nguyên
+    
+    var dateCheckOut = new Date(yearCheckOut, monthCheckOut, dayCheckOut); // Chuyển đổi chuỗi ngày trả vào đối tượng ngày
+
+    //console.log(dateCheckIn >= dateCheckOut); // Kiểm tra xem đối tượng ngày đã được tạo thành công chưa
+    //console.log(dateCheckOut);
+    if (dateCheckIn >= dateCheckOut ){
+      new Noty({
+        text: 'checkin không được lớn hơn checkout',
+        type: 'error',
+        layout: 'topRight',
+        timeout: 3000
+    }).show();
+    return;
+    }
  
 
 
@@ -135,8 +306,8 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
   
   const mapboxToken = 'pk.eyJ1IjoiZmNwaGF0bG9jIiwiYSI6ImNsd3BhbmZ6NzE0ZzgybXJ6OWkydWQ5YnYifQ.y68hz5wbABat0CPaoRsr7g';  // Token API Mapbox
 
-  console.log(checkIn)
-  console.log(checkOut)
+  //console.log(checkIn)
+  //console.log(checkOut)
 
 
   function geocode(address) {
@@ -172,7 +343,7 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
 
 
   // Xây dựng URL của API với các tham số tìm kiếm
-  var apiUrl = urlApi + '/api/hotel/getHotel?search=' + search + '&checkIn=' + checkIn + '&checkOut=' + checkOut + '&pagenum=' + $scope.page;
+  var apiUrl = urlApi + '/api/hotel/getHotel?search=' + search + '&checkIn=' + checkIn + '&checkOut=' + checkOut + '&pagenum=' + $scope.page+ '&hotelName='+hotelName;
   // Gửi yêu cầu GET đến API để lấy dữ liệu khách sạn và thông tin người dùng
   var hotelPromise = $http.get(apiUrl)
     .then(function (response) {
@@ -185,7 +356,7 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
       // Trả về dữ liệu để sử dụng trong Promise tiếp theo
       $scope.totalPage = response.data.data.totalPage
       $scope.pages = Array.from({ length: $scope.totalPage }, (v, k) => k + 1);
-      console.log(response.data.data)
+      //console.log(response.data.data)
 
       return hotelData;
     })
@@ -260,7 +431,7 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
       $scope.page = pagechange;
       
   // Xây dựng URL của API với các tham số tìm kiếm
-  var apiUrl = urlApi + '/api/hotel/getHotel?search=' + search + '&checkIn=' + checkIn + '&checkOut=' + checkOut + '&pagenum=' + $scope.page;
+  var apiUrl = urlApi + '/api/hotel/getHotel?search=' + search + '&checkIn=' + checkIn + '&checkOut=' + checkOut + '&pagenum=' + $scope.page +'&hotelName='+hotelName;
   // Gửi yêu cầu GET đến API để lấy dữ liệu khách sạn và thông tin người dùng
   var hotelPromise = $http.get(apiUrl)
     .then(function (response) {
@@ -273,7 +444,7 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
       // Trả về dữ liệu để sử dụng trong Promise tiếp theo
       $scope.totalPage = response.data.data.totalPage
       $scope.pages = Array.from({ length: $scope.totalPage }, (v, k) => k + 1);
-      console.log(response.data.data)
+      //console.log(response.data.data)
 
       return hotelData;
     })
@@ -335,7 +506,7 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
 
         // Hàm chuyển đến trang tiếp theo
   $scope.nextPage = function () {
-    console.log('next')
+    //console.log('next')
     if ($scope.currentPage < $scope.totalPage - 1) {
       $scope.currentPage++;
       $scope.pagechange($scope.currentPage)
@@ -344,7 +515,7 @@ app.controller('hotelsController', function ($scope, $http, $routeParams, $locat
 
   // Hàm chuyển đến trang trước
   $scope.previousPage = function () {
-    console.log('previous')
+    //console.log('previous')
     if ($scope.currentPage > 0) {
       $scope.currentPage--;
       $$scope.pagechange($scope.currentPage)
@@ -396,7 +567,7 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
   var Out = new Date($routeParams.return);
   var timeDifference = Out.getTime() - In.getTime();
   $scope.day = timeDifference / (1000 * 3600 * 24);
-  console.log($scope.day)
+  //console.log($scope.day)
 
 
   // Hàm để lấy lộ trình và tính khoảng cách giữa hai tọa độ
@@ -445,7 +616,7 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
       $scope.price = $scope.hotel.price * $scope.day
 
 
-      console.log(hotelData)
+      //console.log(hotelData)
       // Trả về dữ liệu để sử dụng trong Promise tiếp theo
       return hotelData;
     })
@@ -455,13 +626,13 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
 
   $scope.chooseRoom = function () {
     var roomchoose = JSON.parse($scope.roomchoose)
-    console.log(roomchoose)
+    //console.log(roomchoose)
     $scope.roomName = roomchoose.roomName
     $scope.price = (roomchoose.price * $scope.day)
     $scope.bill.price = (roomchoose.price * $scope.day)
     $scope.bill.booking.roomBookingId = roomchoose.id
-    console.log($scope.price)
-    console.log($scope.day)
+    //console.log($scope.price)
+    //console.log($scope.day)
   }
 
 
@@ -475,6 +646,8 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
     .then(function (response) {
       // Lưu trữ dữ liệu từ yêu cầu API trong một biến
       var userData = response.data;
+      $scope.userBook = response.data;
+      //console.log ($scope.userBook)
       $scope.bill.booking.userBookingId = response.data.userId;
       var fullName = response.data.fullname;
       var parts = fullName.split(" "); // Tách chuỗi theo khoảng trắng
@@ -483,7 +656,7 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
       $scope.bill.lastName = lastName;
       $scope.bill.firstName = firstName;
       $scope.bill.phone = response.data.phone
-      console.log("Tên:", firstName);
+      //console.log("Tên:", firstName);
 
       // Trả về dữ liệu để sử dụng trong Promise tiếp theo
       return userData;
@@ -549,7 +722,7 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
         }
       }).show();
     } else {
-      console.log($scope.bill)
+      //console.log($scope.bill)
       $http({
         url: urlApi + '/api/booking/book',
         method: "POST",
@@ -579,7 +752,70 @@ app.controller('HotelDetailsController', function ($scope, $http, $routeParams, 
               layout: 'topRight',
               timeout: 3000
             }).show();
-            console.log(response.data.message)
+            //console.log(response.data.message)
+          });
+    }
+
+  }
+
+  $scope.bookVistor = function () {
+    if ($scope.bill.booking.roomBookingId == null) {
+      // failed
+      new Noty({
+        text: 'Vui Lòng Chọn Phòng',
+        type: 'error',
+        layout: 'topRight',
+        timeout: 5000
+      }).show();
+    } else if (localStorage.getItem('token') == null) {
+      // failed
+      new Noty({
+        text: 'Vui Lòng Đăng Nhập',
+        type: 'error',
+        layout: 'topRight',
+        timeout: 1000,
+        callbacks: {
+          onClose: function () {
+            window.location.href = '#/login'; // Chuyển hướng về index.html sau khi Noty đóng
+          }
+        }
+      }).show();
+    } else {
+      //console.log($scope.bill)
+      $http({
+        url: urlApi + '/api/admin/bookVistor',
+        method: "POST",
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        },
+        data: JSON.stringify($scope.bill)
+      })
+        .then(function (response) {
+          new Noty({
+            text: 'Đặt Phòng Thành Công',
+            type: 'success',
+            layout: 'topRight',
+            timeout: 1000,
+            callbacks: {
+              onClose: function () {
+                window.location = '#!/booking/' + response.data.data.id; // Chuyển hướng về index.html sau khi Noty đóng
+              }
+            }
+          }).show();
+
+        },
+          function (response) { // optional
+            // failed
+
+            // Hiển thị Noty khi form không hợp lệ
+            new Noty({
+              text: response.data.message,
+              type: 'error',
+              layout: 'topRight',
+              timeout: 3000
+            }).show();
+            //console.log(response.data.message)
           });
     }
 
@@ -594,7 +830,7 @@ app.controller('loginController', function ($scope, $http, $location) {
       email: $scope.email,
       password: $scope.password
     }
-    console.log(data)
+    //console.log(data)
     $http({
       url: urlApi + '/api/auth/login',
       method: "POST",
@@ -626,7 +862,7 @@ app.controller('loginController', function ($scope, $http, $location) {
             layout: 'topRight',
             timeout: 3000
           }).show();
-          console.log(response.data.message)
+          //console.log(response.data.message)
         });
 
   }
@@ -636,22 +872,49 @@ app.controller('BlogHomeController', function ($scope, $http, $location, $routeP
   pageNum = $routeParams.pageNum;
   search = $routeParams.search;
   if (pageNum == undefined) {
-    pageNum = 0;
+    pageNum = 1;
   }
 
 
   if (search != undefined) {
-    console.log("có search")
+    //console.log("có search")
   }
   if (search == undefined) {
     search = '';
   }
-  $http.get(urlApi + '/api/post/getPost?pageNum=' + pageNum + '&search=' + search, {
+
+  $scope.searchBlog = function (){
+    if ($scope.search != null){
+      window.location = '#!/blog?search='+$scope.search
+    }
+  }
+  $http.get(urlApi + '/api/post/getPost?pageNum=' + (pageNum-1) + '&search=' + search, {
   })
     .then(response => {
-      $scope.posts = response.data.data
-      console.log($scope.posts.content)
+      $scope.posts = response.data.data.content
+      //console.log (response)
+    $scope.totalPage = response.data.data.totalPage
+    $scope.pages = Array.from({ length: $scope.totalPage }, (v, k) => k + 1);
+    //console.log($scope.post)
+      //console.log($scope.posts)
     })
+
+    $scope.nextPage = function () {
+      //console.log('next')
+      if ($scope.currentPage < $scope.totalPage - 1) {
+        $scope.currentPage++;
+        $location.path('/mybooking/' + ($scope.currentPage + 1));
+      }
+    };
+  
+    // Hàm chuyển đến trang trước
+    $scope.previousPage = function () {
+      //console.log('previous')
+      if ($scope.currentPage > 0) {
+        $scope.currentPage--;
+        $location.path('/mybooking/' + ($scope.currentPage + 1));
+      }
+    };
 
 });
 
@@ -668,6 +931,7 @@ app.controller('header', function ($scope, $http) {
         $scope.user = response.data
       }).catch(error => {
         window.location.reload = '#!/login'
+        localStorage.removeItem("token");
       });
   }
   if (localStorage.getItem('token') == null) {
@@ -733,23 +997,37 @@ app.controller('registerController', function ($scope, $http, $location) {
     $scope.showAddressSuggestions = false;
   };
 
+  function isValidEmail(email) {
+    // Sử dụng một biểu thức chính quy hoặc bất kỳ logic kiểm tra email nào bạn muốn ở đây
+    var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+} ;
+
+
   // Hàm đăng ký người dùng
   $scope.register = function () {
     $scope.user.city = $scope.selectedProvince.full_name;
     $scope.user.district = $scope.selectedDistrict.full_name;
     $scope.user.ward = $scope.selectedWard.full_name;
-    console.log($scope.user);
+    //console.log($scope.user);
+    //console.log (isValidEmail($scope.user.email))
+    if (isValidEmail($scope.user.email)==false){
+      $scope.error = 'email không hợp lệ';
+      return
+    }
+
+
 
     $http({
       url: urlApi + '/api/auth/register',
       method: "POST",
       data: JSON.stringify($scope.user)
     }).then(function (response) {
-      console.log(response);
+      //console.log(response);
       $scope.success = "Đăng ký thành công. Vui lòng xác minh tài khoản qua email.";
       $scope.error = "";
     }, function (response) {
-      console.log(response);
+      //console.log(response);
       $scope.error = response.data.message;
     });
   };
@@ -761,7 +1039,7 @@ app.controller('VerifyController', function ($http, $routeParams, $scope) {
   token = $routeParams.token;
 
   $http.get(urlApi + '/api/auth/verify?token=' + token).then(function (response) {
-    console.log(response)
+    //console.log(response)
     new Noty({
       text: "Xác Minh Thành Công",
       type: 'success',
@@ -795,12 +1073,54 @@ app.controller('blogController', function ($http, $routeParams, $scope) {
   $http.get(urlApi + '/api/post/getPostById?id=' + id).then(function (response) {
 
     $scope.post = response.data.data
-    console.log($scope.post)
+
+    //console.log ($scope.post)
+
+
+    
   },
     function (response) { // optional
       // failed
       $scope.error = response.data.message
     });
+
+    $scope.searchBlog = function (){
+      if ($scope.search != null){
+        window.location = '#!/blog?search='+$scope.search
+      }
+    }
+
+    $scope.postComment = function (){
+      //console.log ($scope.post.postId)
+      //console.log($scope.comment)
+      
+      var postData = {
+        postid: $scope.post.postId,
+        comment: $scope.comment
+      };
+
+      $http({
+        url: urlApi + '/api/post/comment',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        data: JSON.stringify(postData)
+      }).then(function (response) {
+        new Noty({
+          text: 'comment thành công',
+          type: 'success',
+          layout: 'topRight',
+          timeout: 5000
+        }).show();
+        $scope.post.comments.push(response.data.data)
+      }, function (response) {
+        //console.log(response);
+        $scope.error = response.data.message;
+      });
+      $scope.comment = ''
+    }
 
 
 });
@@ -842,12 +1162,12 @@ app.controller('myprofileController', function ($scope, $http, $location, fileUp
 
   $scope.uploadFile = function () {
     var file = $scope.myFile;
-    console.log('file is ', file);
+    //console.log('file is ', file);
 
     var uploadUrl = urlApi + "/api/file/upload";
     fileUpload.uploadFileToUrl(file, uploadUrl)
       .then(function (response) {
-        console.log('Upload response: ', response);
+        //console.log('Upload response: ', response);
         if (response.data) {
           $scope.user.avatar = response.data.data.link;
         } else {
@@ -870,7 +1190,7 @@ app.controller('myprofileController', function ($scope, $http, $location, fileUp
     .then(response => {
       $scope.user = response.data
 
-      console.log($scope.user)
+      //console.log($scope.user)
     }).catch(error => {
       window.location.reload = '#!/login'
     });
@@ -927,11 +1247,11 @@ app.controller('myprofileController', function ($scope, $http, $location, fileUp
       method: "PUT",
       data: JSON.stringify($scope.user)
     }).then(function (response) {
-      console.log(response);
+      //console.log(response);
       $scope.success = "Cập Nhật Thành Công.";
       $scope.error = "";
     }, function (response) {
-      console.log(response);
+      //console.log(response);
       $scope.error = response.data.message;
     });
   }
@@ -960,7 +1280,7 @@ app.controller('MyBookingController', function ($scope, $http, $location, $route
       $scope.bookings = response.data.data.content
       $scope.totalPage = response.data.data.totalPage
       $scope.pages = Array.from({ length: $scope.totalPage }, (v, k) => k + 1);
-      console.log(response.data.data)
+      ////console.log(response.data.data)
     }).catch(error => {
       window.location.reload = '#!/login'
     });
@@ -968,7 +1288,7 @@ app.controller('MyBookingController', function ($scope, $http, $location, $route
   $scope.currentPage = page;
   // Hàm chuyển đến trang tiếp theo
   $scope.nextPage = function () {
-    console.log('next')
+    ////console.log('next')
     if ($scope.currentPage < $scope.totalPage - 1) {
       $scope.currentPage++;
       $location.path('/mybooking/' + ($scope.currentPage + 1));
@@ -977,7 +1297,7 @@ app.controller('MyBookingController', function ($scope, $http, $location, $route
 
   // Hàm chuyển đến trang trước
   $scope.previousPage = function () {
-    console.log('previous')
+    //console.log('previous')
     if ($scope.currentPage > 0) {
       $scope.currentPage--;
       $location.path('/mybooking/' + ($scope.currentPage + 1));
@@ -1003,11 +1323,11 @@ app.controller('BookingController', function ($scope, $http, $location, $routePa
       'Content-Type': 'application/json'
     }
   }).then(function (response) {
-    console.log(response);
+    //console.log(response);
     if (response.data.message == "success") {
-      console.log(response.data.data.booking.status)
+      //console.log(response.data.data.booking.status)
       if (response.data.data.booking.status === "cancel") {
-        console.log = 'cancel'
+        //console.log = 'cancel'
         response.data.data.booking.status = 'Cancel'
       }
       $scope.booking = response.data.data
@@ -1015,7 +1335,7 @@ app.controller('BookingController', function ($scope, $http, $location, $routePa
       $location.path('/');
     }
   }, function (response) {
-    console.log(response);
+    //console.log(response);
 
   });
 
@@ -1078,10 +1398,10 @@ app.controller('PaymentController', function ($scope, $location, $routeParams, $
   if (vnp_BankTranNo != undefined) {
     apiUrl += '&vnp_BankTranNo=' + vnp_BankTranNo
   }
-  console.log(apiUrl)
+  //console.log(apiUrl)
   $http.get(apiUrl)
     .then(function (response) {
-      console.log(response)
+      //console.log(response)
       new Noty({
         text: response.data.data,
         type: 'success',
@@ -1105,27 +1425,54 @@ app.controller('PaymentController', function ($scope, $location, $routeParams, $
           layout: 'topRight',
           timeout: 3000
         }).show();
-        console.log(response.data.message)
+        //console.log(response.data.message)
       });
 });
-app.controller ('nearhotelsController', function($scope,$http,$location,$routeParams){
+app.controller ('nearhotelsController', function($scope,$http,$location,$routeParams,$filter){
     // Lấy thông tin tìm kiếm từ URL
     var checkIn = $routeParams.start;
     $scope.checkIn = checkIn;
     var checkOut = $routeParams.return;
     $scope.checkOut = checkOut;
     var page = 0;
+    today = new Date()
   
    
   
-  
+    dateNowFormat = $filter('date')(today, 'yyyy/MM/dd')
+    var dateString = checkIn; // Chuỗi ngày cần chuyển đổi
+    var parts = dateString.split('/'); // Tách chuỗi thành các phần tử: năm, tháng, ngày
+    var yearCheckIn = parseInt(parts[0]); // Chuyển đổi phần tử năm thành số nguyên
+    var monthCheckIn = parseInt(parts[1]) - 1; // Chuyển đổi phần tử tháng thành số nguyên và trừ đi 1 vì index của tháng bắt đầu từ 0
+    var dayCheckIn = parseInt(parts[2]); // Chuyển đổi phần tử ngày thành số nguyên
+
+    var dateCheckIn = new Date(yearCheckIn, monthCheckIn, dayCheckIn);
+    var dateString = checkOut; // Chuỗi ngày cần chuyển đổi
+    var parts = dateString.split('/'); // Tách chuỗi thành các phần tử: năm, tháng, ngày
+    var yearCheckOut = parseInt(parts[0]); // Chuyển đổi phần tử năm thành số nguyên
+    var monthCheckOut = parseInt(parts[1]) - 1; // Chuyển đổi phần tử tháng thành số nguyên và trừ đi 1 vì index của tháng bắt đầu từ 0
+    var dayCheckOut = parseInt(parts[2]); // Chuyển đổi phần tử ngày thành số nguyên
+    
+    var dateCheckOut = new Date(yearCheckOut, monthCheckOut, dayCheckOut); // Chuyển đổi chuỗi ngày trả vào đối tượng ngày
+
+    //console.log(dateCheckIn >= dateCheckOut); // Kiểm tra xem đối tượng ngày đã được tạo thành công chưa
+    //console.log(dateCheckOut);
+    if (dateCheckIn >= dateCheckOut ){
+      new Noty({
+        text: 'checkin không được lớn hơn checkout',
+        type: 'error',
+        layout: 'topRight',
+        timeout: 3000
+    }).show();
+    return;
+    }
   
     $scope.page = page;
     
     const mapboxToken = 'pk.eyJ1IjoiZmNwaGF0bG9jIiwiYSI6ImNsd3BhbmZ6NzE0ZzgybXJ6OWkydWQ5YnYifQ.y68hz5wbABat0CPaoRsr7g';  // Token API Mapbox
   
-    console.log(checkIn)
-    console.log(checkOut)
+    //console.log(checkIn)
+    //console.log(checkOut)
   
   
     function geocode(address) {
@@ -1161,21 +1508,21 @@ app.controller ('nearhotelsController', function($scope,$http,$location,$routePa
   
   
    // Xây dựng URL của API với các tham số tìm kiếm
-var apiUrl = urlApi + '/api/hotel/getAllHotel?checkIn='+checkIn+'&checkOut='+checkOut;
-
+var apiUrl = urlApi + '/api/hotel/getAllHotel?checkIn='+checkIn+'&checkOut='+checkOut+'&pageSize=200000000';
+//console.log(apiUrl)
 // Lấy dữ liệu khách sạn từ API
 var hotelPromise = $http.get(apiUrl)
   .then(function (response) {
     // Lưu trữ dữ liệu từ yêu cầu API trong một biến
     var hotelData = response.data.data.content;
-
+    //console.log(response)
     // Gán dữ liệu vào $scope.hotels
     $scope.allhotels = hotelData;
 
     // Trả về dữ liệu để sử dụng trong Promise tiếp theo
     $scope.totalPage = response.data.data.totalPage;
     $scope.pages = Array.from({ length: $scope.totalPage }, (v, k) => k + 1);
-    console.log(response.data.data);
+    //console.log(response.data.data);
 
     return hotelData;
   })
@@ -1202,7 +1549,7 @@ function getCurrentPosition() {
 
   navigator.geolocation.getCurrentPosition(position => {
     $scope.currentPosition = [position.coords.longitude, position.coords.latitude];
-    console.log('Current position:', $scope.currentPosition);
+    //console.log('Current position:', $scope.currentPosition);
   }, error => {
     console.error('Geolocation error:', error);
     new Noty({
@@ -1269,15 +1616,6 @@ Promise.all([hotelPromise])
   });
   
 
-
-
-        
-  
-
-
-
-  
-  
         // Sử dụng dữ liệu từ cả hai promise ở đây
         $http.get(urlApi + "/api/hotel/getService?type=free").then(function (response) {
           $scope.services = response.data.data
@@ -1299,3 +1637,4 @@ app.directive('clickUpload', function () {
     }
   };
 });
+

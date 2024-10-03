@@ -29,6 +29,7 @@
 			<link rel="stylesheet" href="css/animate.min.css">
 			<link rel="stylesheet" href="css/owl.carousel.css">				
 			<link rel="stylesheet" href="css/main.css">
+			<link rel="shortcut icon" href="images/favico.png" type="image/x-icon">
 			<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.8.3/angular-route.min.js"></script>
             <script src="Controllers/Route.js"></script>
@@ -36,11 +37,16 @@
             <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css'></link> 
             <link rel="stylesheet" href="assets/css/editprofile.css">
             <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.10.4/sweetalert2.min.js" integrity="sha512-AXRSg1bk/WYB9XiMgxJJS+jsAuMyS46bL0NZUo0tc2luqTAtDC3zI7UumzsQvFR07j+h2hG37FD9s8RcHTBApA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-			<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
     		<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
    			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" integrity="sha512-1cK78a1o+ht2JcaW6g8OXYwqpev9+6GqOkz9xmBN9iUUhIndKtxwILGWYOSibOKjLsEdjyjZvYDq/cZwNeak0w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.compat.css" integrity="sha512-gFn7XRm5v3GlgOwAQ80SXDT8pyg6uaV9JbW2OkNx5Im2jR8zx2X/3DbHymcZnUraU+klZjRJqNfNkFN7SyR3fg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.compat.min.css" integrity="sha512-b42SanD3pNHoihKwgABd18JUZ2g9j423/frxIP5/gtYgfBz/0nDHGdY/3hi+3JwhSckM3JLklQ/T6tJmV7mZEw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.css" integrity="sha512-phGxLIsvHFArdI7IyLjv14dchvbVkEDaH95efvAae/y2exeWBQCQDpNFbOTdV1p4/pIa/XtbuDCnfhDEIXhvGQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+			<link rel="stylesheet" href="newtemplate/css/style.css">
 		</head>
-	<header id="header" ng-controller="header" style="background-image: url(img/hero-bg.jpg)">
+	<header ng-controller="header"  id="header"style="background-image: url(img/hero-bg.jpg)">
     <div class="header-top">
         <div class="container">
           <div class="row align-items-center">
@@ -64,33 +70,26 @@
     <div class="container main-menu">
         <div class="row align-items-center justify-content-between d-flex">
           <div id="logo">
-            <a href="#!."><img src="img/logo.png" alt="" title="" /></a>
+            <a href="#!."><img src="images/booklogo.png" style="height: 50px; width: 200px;" alt="" title="" /></a>
           </div>
           <nav id="nav-menu-container">
             <ul class="nav-menu">
-              <li><a href="#!/">Home</a></li>
-              <li><a href="#!/about">About</a></li>
-              <li><a href="packages.html">Packages</a></li>
-              <li><a href="hotels.html">Hotels</a></li>
-              <li><a href="insurance.html">Insurence</a></li>
-              <li class="menu-has-children"><a href="">Blog</a>
-                <ul>
-                  <li><a href="blog-home.html">Blog Home</a></li>
-                  <li><a href="blog-single.html">Blog Single</a></li>
-                </ul>
+              <li><a href="#!/">Trang Chủ</a></li>
+              <li><a href="#!/about">Giới Thiệu</a></li>
+              <li class="menu-has-children"><a href="#!/blog">Bài Viết</a>
               </li>	
                                                           
-              <li><a href="contact.html">Contact</a></li>
+              <li><a href="https://www.facebook.com/Phamngocphatloc.info/">Liên Hệ</a></li>
 
-              <li ng-show="{{loged}}==='loged'" class="menu-has-children"><a href="#">Xin Chào: {{user.fullname}}</a>
+              <li ng-show="loged === 'loged'" class="menu-has-children"><a href="#">Xin Chào: {{user.fullname}}</a>
                 <ul>
-                      <li><a href="#!/myprofile">My Profile</a></li>
-					  <li><a href="#!/mybooking/1">My Booking</a></li>
-                      <li class="menu-has-children"><a ng-click="logout()" href="#">Đăng Xuất </a>			                		
+                      <li><a href="#!/myprofile">Thông Tin Của Tôi</a></li>
+					  <li><a href="#!/mybooking/1">Vé Phòng Của Tôi</a></li>
+                      <li><a ng-click="logout()" ng-touch="logout()">Đăng Xuất </a>			                		
                 </ul>
               </li>
 			  
-              <li ng-show="{{loged}}===notlogin"><a href="#!/login">Đăng Nhập</a></li>
+              <li ng-show="!(loged === 'loged')" ><a href="#!/login">Đăng Nhập</a></li>
             </ul>
           </nav><!-- #nav-menu-container -->					      		  
         </div>
@@ -105,7 +104,7 @@
 				<div class="single-footer-widget">
 					<h6>About Agency</h6>
 					<p>
-						The world has become so fast paced that people don’t want to stand by reading a page of information, they would much rather look at a presentation and understand the message. It has come to a point 
+						demo dự án tốt nghiêpj nhóm bookingtravel
 					</p>
 				</div>
 			</div>
@@ -115,10 +114,10 @@
 					<div class="row">
 						<div class="col">
 							<ul>
-								<li><a href="#">Home</a></li>
-								<li><a href="#">Feature</a></li>
-								<li><a href="#">Services</a></li>
-								<li><a href="#">Portfolio</a></li>
+								<li><a href="#!/">Home</a></li>
+								<li><a href="#!/about">About</a></li>
+								<li><a href="#!/blog">Blog</a></li>
+								<li><a href="https://www.facebook.com/Phamngocphatloc.info/">Contact</a></li>
 							</ul>
 						</div>
 						<div class="col">
@@ -168,7 +167,7 @@
 
 		<div class="row footer-bottom d-flex justify-content-between align-items-center">
 			<p class="col-lg-8 col-sm-12 footer-text m-0"><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="#!/" target="_blank">group 8</a>
 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
 			<div class="col-lg-4 col-sm-12 footer-social">
 				<a href="#"><i class="fa fa-facebook"></i></a>
@@ -178,6 +177,13 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			</div>
 		</div>
 	</div>
+	<script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+<df-messenger
+  intent="WELCOME"
+  chat-title="botbooking"
+  agent-id="efc12d32-6ce7-4104-ad87-5378e8704b65"
+  language-code="en"
+></df-messenger>
 </footer>
 <!-- End footer Area -->	
 <script src="js/vendor/jquery-2.2.4.min.js"></script>
@@ -194,4 +200,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <script src="js/owl.carousel.min.js"></script>							
 <script src="js/mail-script.js"></script>	
 <script src="js/main.js"></script>	
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script>
+	AOS.init();
+</script>
 	</html>
