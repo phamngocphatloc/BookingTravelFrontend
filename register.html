@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-  	<title>Login 10</title>
+	<title>Register - BookingTravel</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -54,7 +54,7 @@
 					  </div>
 
 		      		<div class="form-group">
-		      			<input ng-model="user.email" type="text" class="form-control" placeholder="Email"  required>
+		      			<input ng-model="user.email" type="text" class="form-control" placeholder="Email" ng-pattern="/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/" required>
 		      		</div>
 	            <div class="form-group">
 	              <input ng-model="user.password" id="password-field" type="password" class="form-control" placeholder="Password" required>
